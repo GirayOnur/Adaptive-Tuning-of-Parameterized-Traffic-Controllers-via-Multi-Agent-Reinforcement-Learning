@@ -1,5 +1,5 @@
 
-%Simulates the benchmark network with an integrated RL-RL controller
+%Simulates the benchmark network with an integrated RL controller
 % clear
 % clc
 
@@ -64,3 +64,4 @@ save("net_init", 'x', 'x_prev', 'u', 'scenario','k', 'x_prev','dTau', 'dTau_prev
 %RL training:
 
 run const_RL_dec.m
+
