@@ -1,5 +1,5 @@
 
-%Simulates the benchmark network with an integrated RL-MPC controller
+%Simulates the benchmark network with an integrated RL-RL controller
 % clear
 % clc
 
@@ -27,8 +27,8 @@ save("base_demands",'base_demand_o1c1', 'base_demand_o1c2', 'base_demand_o2c1','
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 weather_cond = 1;
 param_sim = param_get(weather_cond);
-param_MPC_low = param_MPC_get(1);
-param_MPC_high = param_MPC_get(0);
+param_RL_low = param_RL_get(1);
+param_RL_high = param_RL_get(0);
 
 x=zeros(75,1);
 
@@ -44,11 +44,11 @@ uu = zeros(size(u,1),N);
 k = 0;
 for i=1:N_init
 
-    if mod(k,param_MPC_low.M) == 0
+    if mod(k,param_RL_low.M) == 0
         x_prev = x;
     end
 
-    if mod(k,param_MPC_high.M) == 0
+    if mod(k,param_RL_high.M) == 0
         dTau_prev = calc_dTau(x,param_sim);
     end    
     x = fun_benchmark_RM(x,u,k,param_sim,scenario);
@@ -62,4 +62,5 @@ save("net_init", 'x', 'x_prev', 'u', 'scenario','k', 'x_prev','dTau', 'dTau_prev
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %RL training:
+
 run const_RL_dec.m
