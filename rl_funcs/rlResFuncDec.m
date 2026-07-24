@@ -1,4 +1,5 @@
 function [initialObservation, initialState] = rlResFuncDec
+% Reset the decentralized environment with noisy demand and a warm-up period.
 
 base_demands = load('base_demands.mat');
 
@@ -22,6 +23,7 @@ N_init = 60;
 u = [0.5;1;1];
 
 k = 0;
+% Warm up the network before exposing local observations to the agents.
 for i=1:N_init
 
     if mod(k,param_RL_low.M) == 0
@@ -53,6 +55,7 @@ demando3c2 = Demands.o3c2(kk+1);
 
 initialState = [xx; uu; kk; scenario; dTau_prev; x_prev(33); x_prev(54)];
 
+% Each agent receives only the demand, queue, and controller states it needs.
 initialObservation = {[[demando1c1,demando1c2]';
                 xx(64); xx(65);
                 uu(1); dTau; dTau_prev; weather_cond]./[x_norm_cen(1:7);x_norm_cen(22)], ...

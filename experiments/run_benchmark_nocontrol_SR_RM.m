@@ -1,11 +1,7 @@
+% Run one benchmark simulation with constant, open-loop control inputs.
 
-%Simulates the benchmark network with an RL controller
-%clear
-%clc
-
-%rng(5)
 scenario = 3;
-N = 2040; %total simulation steps
+N = 2040;
 
 param_sim = param_get(1);
 
@@ -14,9 +10,7 @@ xx = zeros(size(x,1),N);
 u = [0.5;1;1];
 uu = zeros(size(u,1),N);
 
-%simulate without controller to generate congestion using crit density for
-%the output cell
-
+% Build one filtered demand realization from the saved base profiles.
 base_demands = load('base_demands.mat');
 
 Demands.o1c1 = calc_noisy_demands('o1','c1',base_demands.base_demand_o1c1);
@@ -28,6 +22,7 @@ Demands.o3c2 = calc_noisy_demands('o3','c2',base_demands.base_demand_o3c2);
 
 
 k = 0;
+% Use the first 60 steps as a common warm-up period.
 for i=1:60
     x = fun_benchmark_RM_nd(x,u,k,param_sim,scenario,Demands);
     k = k + 1;
@@ -35,11 +30,11 @@ end
 
 u = [0.5;1;1];
 
-%% up to now, it is correct
 weather_cond = 1;
 k_c = 0;
 for i=1:N
 
+    % Only the weather-dependent network parameters change during the run.
     if k >= 1060
         weather_cond = 3;
     end
@@ -52,7 +47,7 @@ for i=1:N
     k_c = k_c + 1;
 end
 
-%%
+% Unpack the recorded state and calculate total time spent.
 v_1_1_c1 = xx(1,:);
 v_1_1_c2 = xx(2,:);
 rho_1_1_c1 = xx(3,:);
@@ -148,7 +143,3 @@ TTS=param_sim.T.*((rho_1_1_c1.*param_sim.lambda.l1 + rho_1_2_c1.*param_sim.lambd
     + rho_4_1_c2.*param_sim.lambda.l7 + rho_5_1_c2.*param_sim.lambda.l8 + rho_5_2_c2.*param_sim.lambda.l9).*param_sim.L_m+w_o_1_c2+w_o_2_c2+w_o_3_c2);
 
 Rho=[rho_5_2_tot;rho_5_1_tot;rho_4_1_tot;rho_3_2_tot;rho_3_1_tot;rho_2_1_tot;rho_1_3_tot;rho_1_2_tot;rho_1_1_tot];
-
-%fprintf('TTS is %.3f veh*h \n', sum(TTS))
-
-%run network_analyzer.m

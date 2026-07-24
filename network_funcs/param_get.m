@@ -1,5 +1,7 @@
 function param = param_get(cond)
+% Return network parameters for the selected weather condition.
 
+% Parameters shared by all weather conditions.
 param.T = 10/3600;
 param.Q_o = 2000;
 param.Q_o_main = 8000;
@@ -13,6 +15,7 @@ param.v_min = 7;
 param.w_con = [200,100,100];
 param.v_con_min = 20;
 
+% Weather changes capacity, relaxation time, and class free-flow speeds.
 switch cond
     case 1
         param.rho_crit = 37.5;
@@ -53,6 +56,7 @@ switch cond
 end
 
 
+% Number of lanes in each modeled section.
 param.lambda.l1 = 4;
 param.lambda.l2 = 4;
 param.lambda.l3 = 4;

@@ -1,7 +1,4 @@
-
-%Simulates the benchmark network with an integrated RL controller
-% clear
-% clc
+% Prepare the network state and train the decentralized DDPG agents.
 
 rng(rngNum)
 
@@ -24,7 +21,7 @@ end
 save("base_demands",'base_demand_o1c1', 'base_demand_o1c2', 'base_demand_o2c1','base_demand_o2c2',...
     'base_demand_o3c1', 'base_demand_o3c2');
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Warm up the network and save a common initial state.
 weather_cond = 1;
 param_sim = param_get(weather_cond);
 param_RL_low = param_RL_get(1);
@@ -59,9 +56,6 @@ end
 dTau = calc_dTau(x,param_sim);
 
 save("net_init", 'x', 'x_prev', 'u', 'scenario','k', 'x_prev','dTau', 'dTau_prev','weather_cond');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%RL training:
-
+% Build the multi-agent environment and start training.
 run const_RL_dec.m
 

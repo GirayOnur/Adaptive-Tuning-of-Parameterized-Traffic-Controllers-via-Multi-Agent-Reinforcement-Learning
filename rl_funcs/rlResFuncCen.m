@@ -1,4 +1,5 @@
 function [initialObservation, initialState] = rlResFuncCen
+% Reset the centralized environment with noisy demand and a warm-up period.
 
 base_demands = load('base_demands.mat');
 
@@ -22,6 +23,7 @@ N_init = 60;
 u = [0.5;1;1];
 
 k = 0;
+% Warm up the network before exposing its state to the agent.
 for i=1:N_init
 
     if mod(k,param_RL_low.M) == 0
@@ -52,6 +54,7 @@ demando3c2 = Demands.o3c2(kk+1);
 
 initialState = [xx; uu; kk; scenario; dTau_prev; x_prev(33); x_prev(54)];
 
+% Keep the observation order aligned with calc_x_norm_cen.
 initialObservation = [[demando1c1,demando1c2]';
                 xx(64); xx(65);
                 uu(1); dTau; dTau_prev;

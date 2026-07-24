@@ -1,7 +1,10 @@
 function x_n = fun_benchmark_RM_nd(x,u,k,param,scenario,demands)
+% Advance the benchmark using demand arrays supplied by the caller.
+
 v_control_max = param.v_control_max;
 v_min = param.v_min;
 
+% Unpack speeds, densities, flows, and origin queues from the state vector.
 v_1_1_c1 = x(1);
 v_1_1_c2 = x(2);
 rho_1_1_c1 = x(3);
@@ -90,12 +93,13 @@ q_o_3_c1 = x(74);
 q_o_3_c2 = x(75);
 
 
-sr_c1 = u(1); %vehicle split rate for class 1, towards the 1st route
-sr_c2 = u(1); %u(2); %vehicle split rate for class 2, towards the 1st route
-rm_1 = u(2); %ramp metering rate for the 1st onramp
-rm_2 = u(3); %ramp metering rate for the 2nd onramp
+% Both classes use the same route split; the other inputs meter the ramps.
+sr_c1 = u(1);
+sr_c2 = u(1);
+rm_1 = u(2);
+rm_2 = u(3);
 
-%%%
+% Main route, sections 1 to 3.
 theta_1_1_c1 = rho_1_1_c1/rho_1_1_tot;
 theta_1_1_c2 = rho_1_1_c2/rho_1_1_tot;
 
@@ -109,8 +113,6 @@ v_1_1_c2_n = calc_v_m_i_n(v_1_1_c2,rho_1_1_tot,v_1_1_c2,rho_1_2_tot,v_control_ma
 
 q_1_1_c1_n = rho_1_1_c1_n*v_1_1_c1_n*param.lambda.l1;
 q_1_1_c2_n = rho_1_1_c2_n*v_1_1_c2_n*param.lambda.l1;
-
-%%%
 
 theta_1_2_c1 = rho_1_2_c1/rho_1_2_tot;
 theta_1_2_c2 = rho_1_2_c2/rho_1_2_tot;
@@ -127,7 +129,6 @@ q_1_2_c1_n = rho_1_2_c1_n*v_1_2_c1_n*param.lambda.l2;
 q_1_2_c2_n = rho_1_2_c2_n*v_1_2_c2_n*param.lambda.l2;
 
 
-%%%
 theta_1_3_c1 = rho_1_3_c1/rho_1_3_tot;
 theta_1_3_c2 = rho_1_3_c2/rho_1_3_tot;
 
@@ -145,7 +146,7 @@ q_1_3_c1_n = rho_1_3_c1_n*v_1_3_c1_n*param.lambda.l3;
 q_1_3_c2_n = rho_1_3_c2_n*v_1_3_c2_n*param.lambda.l3;
 
 
-%%%
+% First branch after the route split.
 theta_2_1_c1 = rho_2_1_c1/rho_2_1_tot;
 theta_2_1_c2 = rho_2_1_c2/rho_2_1_tot;
 
@@ -160,9 +161,7 @@ v_2_1_c2_n = calc_v_m_i_n(v_2_1_c2,rho_2_1_tot,v_1_3_c2,rho_3_1_tot,v_control_ma
 q_2_1_c1_n = rho_2_1_c1_n*v_2_1_c1_n*param.lambda.l4;
 q_2_1_c2_n = rho_2_1_c2_n*v_2_1_c2_n*param.lambda.l4;
 
-%%%
-%
-
+% First branch section downstream of the first on-ramp.
 q_3_1_c1_in = q_o_2_c1 + q_2_1_c1;
 q_3_1_c2_in = q_o_2_c2 + q_2_1_c2;
 
@@ -179,8 +178,6 @@ v_3_1_c2_n = calc_v_m_i_n(v_3_1_c2,rho_3_1_tot,v_2_1_c2,rho_3_2_tot,v_control_ma
 
 q_3_1_c1_n = rho_3_1_c1_n*v_3_1_c1_n*param.lambda.l5;
 q_3_1_c2_n = rho_3_1_c2_n*v_3_1_c2_n*param.lambda.l5;
-
-%%%
 
 rho_out_tot = param.rho_crit;
 
@@ -200,7 +197,7 @@ q_3_2_c2_n = rho_3_2_c2_n*v_3_2_c2_n*param.lambda.l6;
 
 
 
-%%%
+% Second branch after the route split.
 theta_4_1_c1 = rho_4_1_c1/rho_4_1_tot;
 theta_4_1_c2 = rho_4_1_c2/rho_4_1_tot;
 
@@ -215,7 +212,7 @@ v_4_1_c2_n = calc_v_m_i_n(v_4_1_c2,rho_4_1_tot,v_1_3_c2,rho_5_1_tot,v_control_ma
 q_4_1_c1_n = rho_4_1_c1_n*v_4_1_c1_n*param.lambda.l7;
 q_4_1_c2_n = rho_4_1_c2_n*v_4_1_c2_n*param.lambda.l7;
 
-%%%
+% Second branch section downstream of the second on-ramp.
 q_5_1_c1_in = q_o_3_c1 + q_4_1_c1;
 q_5_1_c2_in = q_o_3_c2 + q_4_1_c2;
 
@@ -233,7 +230,6 @@ v_5_1_c2_n = calc_v_m_i_n(v_5_1_c2,rho_5_1_tot,v_4_1_c2,rho_5_2_tot,v_control_ma
 q_5_1_c1_n = rho_5_1_c1_n*v_5_1_c1_n*param.lambda.l8;
 q_5_1_c2_n = rho_5_1_c2_n*v_5_1_c2_n*param.lambda.l8;
 
-%%%
 rho_out_tot = param.rho_crit;
 
 theta_5_2_c1 = rho_5_2_c1/rho_5_2_tot;
@@ -252,8 +248,7 @@ q_5_2_c2_n = rho_5_2_c2_n*v_5_2_c2_n*param.lambda.l9;
 
 
 
-%%%
-%you can update k+1 -> k, k -> k+2 by shifting demand functions by 1 step
+% Update the main-origin queue and admitted flows.
 d_o_1_c1 = demands.o1c1(k+1);
 d_o_1_c2 = demands.o1c2(k+1);
 d_o_1_c1_n = demands.o1c1(k+2);
@@ -270,7 +265,7 @@ q_o_1_c1_n = calc_q_o_main(d_o_1_c1_n,w_o_1_c1_n,rho_1_1_tot_n,q_des_o_1_c1_n,q_
 q_o_1_c2_n = calc_q_o_main(d_o_1_c2_n,w_o_1_c2_n,rho_1_1_tot_n,q_des_o_1_c2_n,q_des_o_1_tot_n,param);
 
 
-%
+% Update the first on-ramp queue and metered flows.
 d_o_2_c1 = demands.o2c1(k+1);
 d_o_2_c2 = demands.o2c2(k+1);
 d_o_2_c1_n = demands.o2c1(k+2);
@@ -289,7 +284,7 @@ q_o_2_c1_n = calc_q_o_ramp(d_o_2_c1_n,w_o_2_c1_n,rm_1,rho_3_1_tot_n,q_des_o_2_c1
 q_o_2_c2_n = calc_q_o_ramp(d_o_2_c2_n,w_o_2_c2_n,rm_1,rho_3_1_tot_n,q_des_o_2_c2_n,q_des_o_2_tot_n,param);
 
 
-%
+% Update the second on-ramp queue and metered flows.
 d_o_3_c1 = demands.o3c1(k+1);
 d_o_3_c2 = demands.o3c2(k+1);
 d_o_3_c1_n = demands.o3c1(k+2);
@@ -308,7 +303,7 @@ q_o_3_c1_n = calc_q_o_ramp(d_o_3_c1_n,w_o_3_c1_n,rm_2,rho_5_1_tot_n,q_des_o_3_c1
 q_o_3_c2_n = calc_q_o_ramp(d_o_3_c2_n,w_o_3_c2_n,rm_2,rho_5_1_tot_n,q_des_o_3_c2_n,q_des_o_3_tot_n,param);
 
 
-%%%
+% Preserve the state ordering expected by the controllers and experiments.
 x_n  =  [v_1_1_c1_n;
         v_1_1_c2_n;
         rho_1_1_c1_n;

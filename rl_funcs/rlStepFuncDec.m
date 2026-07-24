@@ -1,12 +1,14 @@
-function [nextObs,reward,isDone,nextState] = rlStepFuncDec(action,state) %(action,state,agent)
+function [nextObs,reward,isDone,nextState] = rlStepFuncDec(action,state)
+% Apply decentralized tuning actions over a complete RL interval.
 
 param_RL_low = param_RL_get(1);
 param_RL_high = param_RL_get(0);
 
-weather_cond = 1; %default weather condition
+weather_cond = 1;
 
-M_RL = param_RL_low.M_RL; %low or high doesn't matter here since M_RL has the same value for both
+M_RL = param_RL_low.M_RL;
 
+% Unpack the persistent environment state.
 x = state(1:75);
 actions_prev = state(76:78);
 k = state(79);
@@ -25,6 +27,7 @@ u_PI_ALINEA_1 = actions_prev(2);
 u_PI_ALINEA_2  = actions_prev(3);
 
 
+% Convert each agent's normalized action into local controller parameters.
 action1 = action{1};
 action2 = action{2};
 action3 = action{3};
@@ -42,6 +45,7 @@ params_alinea_2.KP = action3(1);
 params_alinea_2.KI = action3(2);
 params_alinea_2.rho_c = action3(3);
 
+% Hold the tuning parameters fixed while the low-level controllers run.
 for i=1:M_RL
 
     if k >= 1060
@@ -69,10 +73,7 @@ for i=1:M_RL
 end
 
 dTau = calc_dTau(x,param);
-
-
-
-%update the next states and the observation:
+% Build the state and normalized local observations for the next agent step.
 if k <= 1060
     [demando1c1,demando1c2]  = demando1_1(k-1,scenario);
     [demando2c1,demando2c2]  = demando2_1(k-1,scenario);
@@ -94,7 +95,7 @@ nextObs = {[[demando1c1,demando1c2]';
                 [[demando3c1,demando3c2]';
                 x(72); x(73); x(54); x_prev(54); u(3);weather_cond]./[x_norm_cen(15:21);x_norm_cen(22)]};
 
-
+% Calculate network travel time and a penalty on abrupt control changes.
 rho_1_1_c1 = xx(3,:);
 rho_1_1_c2 = xx(4,:);
 
@@ -140,26 +141,10 @@ w_o_3_c2 = xx(73,:);
     + rho_4_1_c2.*param.lambda.l7 + rho_5_1_c2.*param.lambda.l8 + rho_5_2_c2.*param.lambda.l9).*param.L_m+w_o_1_c2+w_o_2_c2+w_o_3_c2));
 
 
-    % q_pen = sum((repmat(10,M_RL,1) + (w_o_1_c1+w_o_1_c2)'./100).*( (w_o_1_c1+w_o_1_c2)' > repmat(param.w_con(1),M_RL,1)) ...
-    %          + (repmat(10,M_RL,1) + (w_o_2_c1+w_o_2_c2)'./100).*( (w_o_2_c1+w_o_2_c2)' > repmat(param.w_con(2),M_RL,1)) ...
-    %          + (repmat(10,M_RL,1) + (w_o_3_c1+w_o_3_c2)'./100).*( (w_o_3_c1+w_o_3_c2)' > repmat(param.w_con(3),M_RL,1)));
-    % 
-    reward = -(tts./15 + u_pen./90)./200; %reward functions are 
-                                                     %inspired from action 
-                                                     %divison paper
-                                                     %In that paper, tehre
-                                                     %was single q_pen, and
-                                                     %u_pen values,
-                                                     %therefore I divide
-                                                     %the total sum of all
-                                                     %steps by 90, which is
-                                                     %M_RL. I divide tts by
-                                                     %15, since action
-                                                     %division paper sum
-                                                     %tts of 6 steps, here
-                                                     %we have 90 steps,
-                                                     %90/6 = 15.
-    
+    % Fixed divisors preserve the reward scale used during training.
+    reward = -(tts./15 + u_pen./90)./200;
+
+    % All agents optimize the same network-wide objective.
     reward = [reward,reward,reward];
 
 if k>2039

@@ -1,7 +1,6 @@
 function [demand_c1, demand_c2] = demando3(k,scenario)
-%DEMANDO2 Summary of this function goes here
-%   Detailed explanation goes here
-% k=k-1;
+% Generate the second on-ramp demand profile for both vehicle classes.
+
 if k <= 1060
     k=floor((k-60)/6);
     switch scenario

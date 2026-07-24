@@ -1,3 +1,4 @@
+% Plot the exploration-noise decay over a complete training run.
 
 tot_episode = 5000;
 step_per_episode = 11;

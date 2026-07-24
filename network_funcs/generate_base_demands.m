@@ -1,4 +1,4 @@
-
+% Generate and save the deterministic demand profiles used by simulations.
 
 N_demand = 2102;
 scenario = 3;

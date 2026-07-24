@@ -1,3 +1,4 @@
+% Test ten centralized agents through the observation-noise benchmark.
 
 agent_list = {'agent_2025-11-04 03_10_49.mat' ...
               'agent_2025-11-04 05_27_55.mat' ...
@@ -11,7 +12,7 @@ agent_list = {'agent_2025-11-04 03_10_49.mat' ...
               'agent_2025-11-05 07_46_23.mat' ...
               };
 
-TTS_list = nan(1,100); %10 is size of the agent_list
+TTS_list = nan(1,100);
 cntr = 1;
 
 for ii=1:10

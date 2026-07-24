@@ -1,3 +1,4 @@
+% Test ten decentralized agent sets through the observation-noise benchmark.
 
 agents_list = {'agents_2025-11-03 08_15_50.mat' ...
               'agents_2025-11-03 09_40_44.mat' ...
@@ -12,7 +13,7 @@ agents_list = {'agents_2025-11-03 08_15_50.mat' ...
               };
 
 
-TTS_list = nan(1,100); %10 is size of the agent_list
+TTS_list = nan(1,100);
 cntr = 1;
 
 for ii=1:10

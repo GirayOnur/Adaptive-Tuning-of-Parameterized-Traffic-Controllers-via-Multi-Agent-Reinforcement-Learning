@@ -1,17 +1,14 @@
 function RL_param = param_RL_get(is_low_level)
+% Return controller timing, reward weights, and action scales.
 
 if is_low_level == 1
     RL_param.Np = 10;
     RL_param.Nc = 10;
     RL_param.M = 6;
-    %RL_param.N_multi_start = 20;
-
 else
     RL_param.Np = 2;
     RL_param.Nc = 2;
     RL_param.M = 30;
-    %RL_param.N_multi_start = 5;
-
 end
 
 RL_param.M_RL = 180;

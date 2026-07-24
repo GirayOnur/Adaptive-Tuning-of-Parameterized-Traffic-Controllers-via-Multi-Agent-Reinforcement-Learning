@@ -1,6 +1,6 @@
+% Evaluate the uncontrolled baseline over 100 demand-noise seeds.
 
-
-TTS_list = nan(1,100); %10 is size of the agent_list
+TTS_list = nan(1,100);
 cntr = 1;
 
 for rngNum=1:100

@@ -1,4 +1,6 @@
 function [noisy_demand] = calc_noisy_demands(o_ind,c_ind,base_demand)
+% Add origin- and class-specific Gaussian noise, then smooth the result.
+
 scale_o1c1 = 200;
 scale_o1c2 = 50;
 scale_o2c1 = 40;

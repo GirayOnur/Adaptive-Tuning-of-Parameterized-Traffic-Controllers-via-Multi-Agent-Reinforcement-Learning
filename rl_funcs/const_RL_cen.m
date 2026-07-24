@@ -1,7 +1,6 @@
+% Build and train the centralized DDPG parameter-tuning agent.
 
-%Constructs RL components:
-%RL Algorithm: DDPG
-
+% The action contains PI gains and two ALINEA target densities.
 ObsInfo = rlNumericSpec([22 1]);
 ObsInfo.Name = "RG states, RM1 states, RM2 states";
 ObsInfo.Description = ['2x1 mainstream demand, 2x1 mainstream queue,' ...
@@ -11,12 +10,7 @@ ObsInfo.Description = ['2x1 mainstream demand, 2x1 mainstream queue,' ...
 
 ActInfo = rlNumericSpec([8 1],"UpperLimit", [1;1;1;1;0.5;1;1;0.5], "LowerLimit", [0;0;0;0;0.15;0;0;0.15]);
 ActInfo.Name = "Ramp metering rates";
-
-
-
-
-%%%%%%%%%%%
-
+% The critic processes observations and actions on separate input paths.
 statePath = [featureInputLayer(prod(ObsInfo.Dimension),...
                 'Normalization','none','Name','state')
                 fullyConnectedLayer(256,'Name', 'fc1_state')];
@@ -41,37 +35,27 @@ criticNetwork = addLayers(criticNetwork, commonPath);
 criticNetwork = connectLayers(criticNetwork, 'fc1_state','concat/in1');
 criticNetwork = connectLayers(criticNetwork, 'fc_2_action','concat/in2');
 critic = rlQValueFunction(criticNetwork,ObsInfo,ActInfo);
-
-
+% The actor maps normalized observations to bounded tuning parameters.
 actorNet = [
     featureInputLayer(prod(ObsInfo.Dimension),'Normalization','none','Name','observation')
     fullyConnectedLayer(256,'Name','ActorFC1')
     reluLayer('Name','ActorRelu1')
     fullyConnectedLayer(256,'Name','ActorFC2')
     reluLayer('Name','ActorRelu2')
-%     fullyConnectedLayer(64,'Name','ActorFC3')
-%     reluLayer('Name','ActorRelu3')
     fullyConnectedLayer(prod(ActInfo.Dimension),'Name','ActorFC4')
     tanhLayer('Name','ActorTanh1')
     scalingLayer('Scale',[0.5 0.5 0.5 0.5 0.175 0.5 0.5 0.175]','Bias',[0.5 0.5 0.5 0.5 0.325 0.5 0.5 0.325]')
     ];
 actor  = rlContinuousDeterministicActor(actorNet,ObsInfo,ActInfo);
 
-%activate GPU training:
-%critic.UseDevice = "gpu";
-%actor.UseDevice = "gpu";
-
-%consider parametrizing the learning parameters since they depend on
-%RL_param.M_RL and RL_param.M
+% Configure replay, target updates, optimizers, and exploration noise.
 agent = rlDDPGAgent(actor,critic);
-agent.AgentOptions.MiniBatchSize=64; %10; %RL horizon
-agent.AgentOptions.ExperienceBufferLength=10000; %100; %Single scenario length, 10*mini batch size
+agent.AgentOptions.MiniBatchSize=64;
+agent.AgentOptions.ExperienceBufferLength=10000;
 agent.AgentOptions.TargetSmoothFactor=1e-2;
-agent.AgentOptions.TargetUpdateFrequency=10; %5; %Previously it was 10
+agent.AgentOptions.TargetUpdateFrequency=10;
 agent.AgentOptions.DiscountFactor=0.99;
-agent.AgentOptions.NumStepsToLookAhead=10; %5; %RL control step
-%agent.AgentOptions.LearningFrequency=10; %RL control step, keeps the RL actions optimal by ensuring the agent is stationary during an episode
-%agent.AgentOptions.NumWarmStartSteps=512; %Selected as the mini batch size, which is the possible minimum value
+agent.AgentOptions.NumStepsToLookAhead=10;
 agent.AgentOptions.ActorOptimizerOptions.LearnRate=0.001;
 agent.AgentOptions.ActorOptimizerOptions.GradientThreshold=1;
 agent.AgentOptions.CriticOptimizerOptions.LearnRate=0.001;
@@ -85,30 +69,17 @@ ResetHandle = @() rlResFuncCen;
 
 env = rlFunctionEnv(ObsInfo,ActInfo,StepHandle,ResetHandle);
 
-%activate parallel pools using GPUs
-%availableGPUs = gpuDeviceCount("available");
-%parpool("Processes",availableGPUs);
-
-
-opt = rlTrainingOptions('MaxEpisodes',5000,... %previously it was 3500 episodes
-                                          'MaxStepsPerEpisode',11,'UseParallel',false,... %previously maxsteps was 150 for 900 sim steps
+% Save periodic checkpoints without opening the training plot.
+opt = rlTrainingOptions('MaxEpisodes',5000,...
+                                          'MaxStepsPerEpisode',11,'UseParallel',false,...
                                           'SaveAgentCriteria','EpisodeFrequency',...
                                           'SaveAgentValue',500, 'SaveAgentDirectory', pwd + "\runCen\AgentsCen" + num2str(rngNum), 'Plots',"none");
-%                                          'MaxStepsPerEpisode',150,'UseParallel',false,'SaveAgentCriteria','AverageReward','SaveAgentValue',-1300);%,...
-%                                         'StopTrainingCriteria','AverageReward',...
-%                                         'StopTrainingValue',-1200,...
-%                                         'UseParallel',false,...
-%                                         'SaveAgentCriteria','AverageReward',...
-%                                         'SaveAgentValue',-1200);
-
-%opt.ParallelizationOptions.Mode = "async";
-
-%%%%%%%%%%%
 
 trainResults = train(agent,env,opt);
 
+% Keep the trained policy and its learning history together.
 agent_doc_name = 'agent_' + string(datetime('now'), 'yyyy-MM-dd hh_mm_ss') + '.mat';
 save(agent_doc_name, "agent","trainResults")
 
-%terminate parallel pools
+% Close a pool if training created one.
 delete(gcp("nocreate"));
