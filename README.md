@@ -32,7 +32,7 @@ N_demand = 2102;
 run("rl_training_codes/train_single_agent_RL.m")
 ```
 
-Training is configured for 5,000 episodes, so it can take some time. Pretrained agents are included in `10_multi_agent_frameworks` and `10_single_agent_frameworks`.
+Pretrained agents are included in `10_multi_agent_frameworks` and `10_single_agent_frameworks`.
 
 ## Repository structure
 
